@@ -20,7 +20,7 @@ async function initializeUI() {
             await AuthHelper.setCurrentUser(CONFIG.DEV_USER);
             user = CONFIG.DEV_USER;
         } else {
-            const result = await chrome.storage.local.get('user');
+            const result = await chrome.storage.local.get('PR_pro_user');
             user = result.user;
         }
 

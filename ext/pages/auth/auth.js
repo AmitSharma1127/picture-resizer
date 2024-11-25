@@ -2,68 +2,56 @@
 const googleLoginBtn = document.getElementById("google-login");
 const authStatus = document.getElementById("auth-status");
 
-// Google Auth
-function initializeGoogleAuth() {
-	const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
-	const REDIRECT_URI = chrome.identity.getRedirectURL();
+// Initialize Firebase
+if (!firebase.apps.length) {
+	firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+}
 
-	return {
-		async signIn() {
-			const authUrl =
-				`https://accounts.google.com/o/oauth2/v2/auth?` +
-				`client_id=${CLIENT_ID}` +
-				`&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-				`&response_type=token` +
-				`&scope=profile email`;
+// Google Auth Handler
+async function handleGoogleSignIn() {
+	try {
+		console.log("Starting Google Sign In...");
 
-			try {
-				const token = await new Promise((resolve, reject) => {
-					chrome.identity.launchWebAuthFlow(
-						{
-							url: authUrl,
-							interactive: true
-						},
-						redirectUrl => {
-							if (chrome.runtime.lastError) {
-								reject(chrome.runtime.lastError);
-							} else {
-								// Extract token from redirect URL
-								const url = new URL(redirectUrl);
-								const hash = url.hash.substring(1);
-								const params = new URLSearchParams(hash);
-								resolve(params.get("access_token"));
-							}
-						}
-					);
-				});
+		// Get OAuth token using chrome.identity
+		const token = await new Promise((resolve, reject) => {
+			chrome.identity.getAuthToken({ interactive: true }, function(token) {
+				if (chrome.runtime.lastError) {
+					reject(chrome.runtime.lastError);
+				} else {
+					resolve(token);
+				}
+			});
+		});
 
-				// Get user info with token
-				const userInfo = await fetch(
-					"https://www.googleapis.com/oauth2/v3/userinfo",
-					{
-						headers: { Authorization: `Bearer ${token}` }
-					}
-				).then(res => res.json());
+		// Create credential with the token
+		const credential = firebase.auth.GoogleAuthProvider.credential(null, token);
 
-				// Save user info
-				const user = {
-					uid: userInfo.sub,
-					email: userInfo.email,
-					displayName: userInfo.name,
-					photoURL: userInfo.picture,
-					token
-				};
+		// Sign in to Firebase with credential
+		const userCredential = await firebase
+			.auth()
+			.signInWithCredential(credential);
+		console.log("Google Sign In successful:", userCredential);
 
-				await chrome.storage.local.set({ user });
+		// Create user object
+		const user = {
+			uid: userCredential.user.uid,
+			email: userCredential.user.email,
+			displayName: userCredential.user.displayName,
+			photoURL: userCredential.user.photoURL,
+			token: await userCredential.user.getIdToken(),
+			tokenExpiry: Date.now() + CONFIG.auth.tokenExpiry
+		};
 
-				showSuccess();
-				notifyExtension(user);
-			} catch (error) {
-				console.error("Auth Error:", error);
-				alert("Authentication failed. Please try again.");
-			}
-		}
-	};
+		// Store in chrome.storage
+		await chrome.storage.local.set({ user });
+
+		// Show success and notify extension
+		showSuccess();
+		notifyExtension(user);
+	} catch (error) {
+		console.error("Auth Error:", error);
+		alert(`Authentication failed: ${error.message}`);
+	}
 }
 
 // Show success message
@@ -80,8 +68,18 @@ function notifyExtension(user) {
 	});
 }
 
-// Initialize auth
-const auth = initializeGoogleAuth();
-
 // Add click handler
-googleLoginBtn.addEventListener("click", () => auth.signIn());
+googleLoginBtn.addEventListener("click", handleGoogleSignIn);
+
+// Check for existing session
+(async () => {
+	try {
+		const { user } = await chrome.storage.local.get("user");
+		if (user) {
+			showSuccess();
+			notifyExtension(user);
+		}
+	} catch (error) {
+		console.error("Session check error:", error);
+	}
+})();

@@ -1,0 +1,17 @@
+{
+    "name": "image-resizer-extension",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "webpack --config webpack.config.js",
+        "watch": "webpack --config webpack.config.js --watch"
+    },
+    "dependencies": {
+        "firebase": "^9.6.0"
+    },
+    "devDependencies": {
+        "webpack": "^5.88.0",
+        "webpack-cli": "^5.1.4",
+        "copy-webpack-plugin": "^11.0.0"
+    }
+}

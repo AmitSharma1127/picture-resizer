@@ -1,14 +1,3 @@
-import { auth, db } from "../../src/firebase-config";
-import {
-	collection,
-	query,
-	where,
-	orderBy,
-	getDocs,
-	deleteDoc
-} from "firebase/firestore";
-
-// DOM Elements
 const historyList = document.getElementById("history-list");
 const historyCount = document.getElementById("history-count");
 const emptyState = document.getElementById("empty-state");
@@ -16,31 +5,30 @@ const clearHistoryBtn = document.getElementById("clear-history");
 
 // Load History
 async function loadHistory() {
-	const user = auth.currentUser;
-	if (!user) {
-		window.location.href = "auth.html";
-		return;
-	}
+	const history = await getHistory();
+	displayHistory(history);
+}
 
-	const historyRef = collection(db, "history");
-	const q = query(
-		historyRef,
-		where("userId", "==", user.uid),
-		orderBy("timestamp", "desc")
-	);
+// Get History from Chrome Storage
+async function getHistory() {
+	const { history = [] } = await chrome.storage.local.get("history");
+	return history;
+}
 
-	try {
-		const snapshot = await getDocs(q);
-		const history = [];
-
-		snapshot.forEach(doc => {
-			history.push({ id: doc.id, ...doc.data() });
-		});
-
-		displayHistory(history);
-	} catch (error) {
-		console.error("Failed to load history:", error);
-	}
+// Save History to Chrome Storage
+// Save History to Chrome Storage
+async function saveHistory(history) {
+	console.log("Saving history:", history.length);
+	const updatedHistory = history.map((item, index) => ({
+		id: item.id || index,
+		resizedUrl: item.resizedUrl,
+		originalWidth: item.originalWidth,
+		originalHeight: item.originalHeight,
+		width: item.width,
+		height: item.height,
+		timestamp: item.timestamp
+	}));
+	await chrome.storage.local.set({ history: updatedHistory });
 }
 
 // Display History
@@ -86,11 +74,11 @@ function createHistoryItem(item) {
       </div>
       <div class="history-actions">
         <button class="btn-secondary copy-btn" data-url="${item.resizedUrl}">
-          <img src="assets/copy.svg" alt="Copy" class="icon">
+          <img src="../../assets/svg/copy.svg" alt="Copy" class="icon">
           Copy URL
         </button>
         <button class="btn-secondary delete-btn" data-id="${item.id}">
-          <img src="assets/trash.svg" alt="Delete" class="icon">Delete
+          <img src="../../assets/svg/trash.svg" alt="Delete" class="icon">Delete
         </button>
       </div>
     </div>
@@ -105,7 +93,7 @@ function createHistoryItem(item) {
 		const button = e.target.closest(".copy-btn");
 		const originalContent = button.innerHTML;
 		button.innerHTML =
-			'<img src="assets/check.svg" alt="Copied" class="icon">Copied!';
+			'<img width="25" src="../../assets/svg/check.svg" alt="Copied" class="icon">Copied!';
 		setTimeout(() => {
 			button.innerHTML = originalContent;
 		}, 2000);
@@ -114,6 +102,7 @@ function createHistoryItem(item) {
 	// Delete handler
 	div.querySelector(".delete-btn").addEventListener("click", async e => {
 		const id = e.target.closest(".delete-btn").dataset.id;
+		console.log("Delete item with ID:", id);
 		await deleteHistoryItem(id);
 	});
 
@@ -122,12 +111,12 @@ function createHistoryItem(item) {
 
 // Delete History Item
 async function deleteHistoryItem(id) {
-	try {
-		await deleteDoc(doc(db, "history", id));
-		await loadHistory(); // Refresh the list
-	} catch (error) {
-		console.error("Failed to delete history item:", error);
-	}
+	const history = await getHistory();
+	console.log("Deleting item with ID:", id);
+	const updatedHistory = history.filter(item => item.id !== Number(id));
+	console.log("Updated history:", updatedHistory);
+	await saveHistory(updatedHistory);
+	await loadHistory();
 }
 
 // Clear All History
@@ -136,18 +125,8 @@ clearHistoryBtn.addEventListener("click", async () => {
 		return;
 	}
 
-	const user = auth.currentUser;
-	const historyRef = collection(db, "history");
-	const q = query(historyRef, where("userId", "==", user.uid));
-
-	try {
-		const snapshot = await getDocs(q);
-		const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-		await Promise.all(deletePromises);
-		await loadHistory(); // Refresh the list
-	} catch (error) {
-		console.error("Failed to clear history:", error);
-	}
+	await chrome.storage.local.remove("history");
+	await loadHistory();
 });
 
 // Initialize

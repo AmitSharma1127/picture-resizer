@@ -12,15 +12,15 @@ const API = {
       const token = await this.getToken();
       if (!token && !CONFIG.IS_DEV) throw new Error('Not authenticated');
 
-      if (CONFIG.IS_DEV) {
-        // Mock API response for development
-        return {
-          success: true,
-          resizedUrl: imageUrl, // Just return original URL in dev mode
-          width,
-          height
-        };
-      }
+      // if (CONFIG.IS_DEV) {
+      //   // Mock API response for development
+      //   return {
+      //     success: true,
+      //     resizedUrl: imageUrl, // Just return original URL in dev mode
+      //     width,
+      //     height
+      //   };
+      // }
 
       const response = await fetch(`${CONFIG.API_BASE_URL}/api/resize`, {
         method: 'POST',
@@ -28,7 +28,7 @@ const API = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ url: imageUrl, width, height })
+        body: JSON.stringify({ imageUrl, width, height })
       });
 
       if (!response.ok) throw new Error('Resize failed');
@@ -38,6 +38,18 @@ const API = {
       console.error('API Error:', error);
       throw error;
     }
+  },
+
+  formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   },
 
   async getHistory() {

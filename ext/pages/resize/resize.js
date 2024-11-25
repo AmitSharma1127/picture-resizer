@@ -21,6 +21,22 @@ let originalWidth = 0;
 let originalHeight = 0;
 let originalFileSize = 0;
 
+// Notification
+const notification = document.getElementById("notification");
+const notificationIcon = document.getElementById("notification-icon");
+const notificationMessage = document.getElementById("notification-message");
+
+// Show Notification
+function showNotification(type, message) {
+	notificationIcon.className = `notification-icon ${type}`;
+	notificationMessage.textContent = message;
+	notification.classList.remove("hidden");
+
+	setTimeout(() => {
+		notification.classList.add("hidden");
+	}, 3000);
+}
+
 // Initialize
 async function init() {
 	try {
@@ -66,7 +82,7 @@ async function init() {
 		img.src = imageUrl;
 	} catch (error) {
 		console.error("Initialization error:", error);
-		alert("Failed to initialize resize dialog");
+		showNotification("error", "Failed to initialize resize dialog");
 		window.close();
 	}
 }
@@ -121,7 +137,6 @@ function updateSizeEstimation() {
 	}
 
 	// Estimate new file size based on pixel ratio
-	// Estimate new file size based on pixel ratio
 	const pixelRatio = width * height / (originalWidth * originalHeight);
 	const estimatedBytes = Math.round(originalFileSize * pixelRatio);
 
@@ -175,10 +190,13 @@ async function handleResize() {
 		// Call resize API
 		const result = await API.resizeImage(imageUrl, width, height);
 
+		// create random ID
+		const id = Math.floor(Math.random() * 1000000000);
 		// Save to history
 		await StorageHelper.addToHistory({
+			id,
 			originalUrl: imageUrl,
-			resizedUrl: result.resizedUrl,
+			resizedUrl: CONFIG.API_BASE_URL + result.resizedUrl,
 			originalWidth,
 			originalHeight,
 			width,
@@ -189,7 +207,7 @@ async function handleResize() {
 		window.close();
 	} catch (error) {
 		console.error("Resize error:", error);
-		alert(error.message || "Failed to resize image");
+		showNotification("error", "Failed to resize image");
 
 		// Reset loading state
 		resizeText.classList.remove("hidden");

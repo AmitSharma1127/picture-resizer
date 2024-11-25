@@ -6,11 +6,19 @@
     "permissions": [
         "activeTab",
         "scripting",
-        "storage"
+        "storage",
+        "identity"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "https://*/*"
     ],
+    "oauth2": {
+        "client_id": "999707026020-k37ooin32h3bucket8knf8j2r3927e3i.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
+    },
     "action": {
         "default_popup": "popup/popup.html",
         "default_icon": {
@@ -20,8 +28,10 @@
         }
     },
     "background": {
-        "service_worker": "background/background.js",
-        "type": "module"
+        "service_worker": "background/background.js"
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
     },
     "icons": {
         "16": "assets/icons/icon16.png",
