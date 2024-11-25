@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Resizer Pro</title>
+    <link rel="stylesheet" href="popup.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div class="container">
+        <!-- Auth Check Loading State -->
+        <div id="auth-check" class="auth-check">
+            <div class="loader"></div>
+            <p>Checking authentication...</p>
+        </div>
+
+        <!-- Not Authenticated State -->
+        <div id="not-authenticated" class="content hidden">
+            <div class="hero">
+                <img src="../assets/svg/logo.svg" alt="Image Resizer Pro" class="logo">
+                <h1>Image Resizer Pro</h1>
+                <p>Please log in to access image resizing features</p>
+            </div>
+            <button id="login-btn" class="btn-primary">
+                <img src="../assets/svg/google.svg" alt="Google" class="icon">
+                Sign in with Google
+            </button>
+        </div>
+
+        <!-- Authenticated State -->
+        <div id="authenticated" class="content hidden">
+            <!-- Header -->
+            <div class="header">
+                <div class="user-info">
+                    <img id="user-avatar" src="" alt="" class="avatar">
+                    <span id="user-name" class="username"></span>
+                </div>
+                <div class="header-actions">
+                    <button id="view-history" class="btn-secondary">
+                        <img src="../assets/svg/history.svg" alt="History" class="icon">
+                        History
+                    </button>
+                    <button id="logout-btn" class="btn-ghost">
+                        <img src="../assets/svg/logout.svg" alt="Logout" class="icon">
+                    </button>
+                </div>
+            </div>
+
+            <!-- Image Detection Status -->
+            <div id="image-detection" class="image-detection">
+                <div class="loader"></div>
+                <p>Scanning for images...</p>
+            </div>
+
+            <!-- No Images Found State -->
+            <div id="no-images" class="no-images hidden">
+                <div class="empty-state">
+                    <img src="../assets/svg/empty.svg" alt="No images" class="empty-icon">
+                    <p>No images found on this page</p>
+                    <button id="refresh-btn" class="btn-secondary">
+                        <img src="../assets/svg/refresh.svg" alt="Refresh" class="icon">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Images Found State -->
+            <div id="images-found" class="images-found hidden">
+                <div class="status-bar">
+                    <span id="image-count" class="image-count">0 images found</span>
+                    <button id="refresh-btn" class="btn-icon">
+                        <img src="../assets/svg/refresh.svg" alt="Refresh" class="icon">
+                    </button>
+                </div>
+                <div id="image-grid" class="image-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Image Resizer Pro</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .login-container {
+      background: white;
+      padding: 32px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .login-title {
+      margin-bottom: 24px;
+      color: #333;
+    }
+
+    .login-button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .google-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .success-message {
+      margin-top: 16px;
+      color: #34a853;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1 class="login-title">Image Resizer Pro</h1>
+    <button id="google-login" class="login-button">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+           alt="Google" 
+           class="google-icon">
+      Sign in with Google
+    </button>
+    <p id="success-message" class="success-message">
+      Successfully logged in! You can close this tab now.
+    </p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+  <script>
+    // Initialize Firebase with your config
+    const firebaseConfig = {
+      // Add your Firebase config here
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const googleLogin = document.getElementById('google-login');
+    const successMessage = document.getElementById('success-message');
+
+    googleLogin.addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        
+        // Notify the extension about successful login
+        chrome.runtime.sendMessage({
+          type: 'AUTH_STATE_CHANGED',
+          user: {
+            uid: result.user.uid,
+            email: result.user.email,
+            displayName: result.user.displayName,
+            photoURL: result.user.photoURL
+          }
+        });
+
+        // Show success message
+        googleLogin.style.display = 'none';
+        successMessage.style.display = 'block';
+      } catch (error) {
+        console.error('Login failed:', error);
+        alert('Login failed. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

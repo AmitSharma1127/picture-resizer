@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>History - Image Resizer Pro</title>
+  <link rel="stylesheet" href="history.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>Resize History</h1>
+          <span id="history-count" class="history-count">0 items</span>
+        </div>
+        <div class="header-right">
+          <button id="clear-history" class="btn-secondary">
+            <img src="assets/svg/trash.svg" alt="Clear" class="icon">
+            Clear History
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div id="history-list" class="history-list">
+        <!-- History items will be inserted here -->
+      </div>
+
+      <div id="empty-state" class="empty-state hidden">
+        <img src="assets/empty.svg" alt="No history" class="empty-icon">
+        <h2>No History Yet</h2>
+        <p>Your resize history will appear here</p>
+      </div>
+    </main>
+  </div>
+  <script src="history.js"></script>
+</body>
+</html>
