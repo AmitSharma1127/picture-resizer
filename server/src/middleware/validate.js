@@ -6,6 +6,7 @@ const validate = validations => {
 
 		const errors = validationResult(req);
 		if (errors.isEmpty()) {
+			console.log("validation passed");
 			return next();
 		}
 

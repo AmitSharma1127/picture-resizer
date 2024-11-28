@@ -1,12 +1,15 @@
 const express = require("express");
 const sharp = require("sharp");
 const cors = require("cors");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use(cors());
+
+app.use("/api/auth", authRoutes);
 
 app.post("/api/resize", async (req, res) => {
 	const { imageUrl, width, height } = req.body;

@@ -1,4 +1,3 @@
-// DOM Elements
 const authCheck = document.getElementById('auth-check');
 const notAuthenticated = document.getElementById('not-authenticated');
 const authenticated = document.getElementById('authenticated');
@@ -11,27 +10,115 @@ const imageCount = document.getElementById('image-count');
 const refreshBtn = document.getElementById('refresh-btn');
 const viewHistoryBtn = document.getElementById('view-history');
 
+// check-oauth-config.js
+function checkOAuthConfig() {
+    // 1. Check manifest permissions
+    const manifest = chrome.runtime.getManifest();
+    console.log("=== OAuth Configuration Check ===");
+    
+    // Check required permissions
+    const requiredPermissions = ['identity'];
+    const missingPermissions = requiredPermissions.filter(p => !manifest.permissions.includes(p));
+    console.log("Permissions Check:", missingPermissions.length === 0 ? "✓" : "✗");
+    if (missingPermissions.length > 0) {
+        console.error("Missing permissions:", missingPermissions);
+    }
+
+    // Check OAuth2 config
+    if (!manifest.oauth2) {
+        console.error("❌ Missing oauth2 configuration in manifest");
+        return;
+    }
+
+    // Check client ID format
+    const clientId = manifest.oauth2.client_id;
+    console.log("Client ID:", clientId);
+    if (!clientId || !clientId.endsWith('.apps.googleusercontent.com')) {
+        console.error("❌ Invalid client ID format. Should end with .apps.googleusercontent.com");
+        return;
+    }
+
+    // Check required scopes
+    const requiredScopes = [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+    ];
+    const missingScopes = requiredScopes.filter(s => !manifest.oauth2.scopes.includes(s));
+    console.log("Scopes Check:", missingScopes.length === 0 ? "✓" : "✗");
+    if (missingScopes.length > 0) {
+        console.error("Missing scopes:", missingScopes);
+    }
+
+    // Test OAuth token retrieval
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+        if (chrome.runtime.lastError) {
+            console.error("Token retrieval failed:", chrome.runtime.lastError.message);
+        } else {
+            console.log("Token retrieval test: ✓");
+            console.log("Token available:", !!token);
+        }
+    });
+
+    console.log("Extension ID:", chrome.runtime.id);
+}
+
+// Run check when the script loads
+// document.addEventListener('DOMContentLoaded', checkOAuthConfig);
+
 // Initialize UI based on auth state
+async function refreshAuthToken() {
+    try {
+        // Clear existing tokens first
+        await new Promise((resolve) => {
+            chrome.identity.clearAllCachedAuthTokens(resolve);
+        });
+
+        // Get new token with interactive mode
+        const token = await new Promise((resolve, reject) => {
+            chrome.identity.getAuthToken({ interactive: true }, (token) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve(token);
+                }
+            });
+        });
+
+        return token;
+    } catch (error) {
+        console.error('Token refresh failed:', error);
+        throw error;
+    }
+}
 async function initializeUI() {
     try {
-        let user;
+        authCheck.classList.remove('hidden');
         
-        if (CONFIG.IS_DEV) {
-            await AuthHelper.setCurrentUser(CONFIG.DEV_USER);
-            user = CONFIG.DEV_USER;
-        } else {
-            const result = await chrome.storage.local.get('PR_pro_user');
-            user = result.user;
+        try {
+            // Try to get stored user first
+            const { PR_pro_user } = await chrome.storage.local.get('PR_pro_user');
+            
+            if (PR_pro_user) {
+                // If we have a stored user, try to refresh the token
+                try {
+                    await refreshAuthToken();
+                    showAuthenticatedUI(PR_pro_user);
+                    await detectImages();
+                } catch (tokenError) {
+                    console.error('Token refresh failed:', tokenError);
+                    // If token refresh fails, clear storage and show login
+                    await chrome.storage.local.remove('PR_pro_user');
+                    showUnauthenticatedUI();
+                }
+            } else {
+                showUnauthenticatedUI();
+            }
+        } catch (error) {
+            console.error('Storage access error:', error);
+            showUnauthenticatedUI();
         }
 
         authCheck.classList.add('hidden');
-        
-        if (user) {
-            showAuthenticatedUI(user);
-            await detectImages();
-        } else {
-            showUnauthenticatedUI();
-        }
     } catch (error) {
         console.error('Initialization error:', error);
         authCheck.classList.add('hidden');
@@ -41,6 +128,7 @@ async function initializeUI() {
 
 // UI State Functions
 function showAuthenticatedUI(user) {
+    console.log('Authenticated as:', user);
     authenticated.classList.remove('hidden');
     notAuthenticated.classList.add('hidden');
     
@@ -81,7 +169,7 @@ async function detectImages() {
         if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
             imageGrid.innerHTML = `
                 <div class="empty-state">
-                    <img src="../assets/svg/error.svg" alt="Error" class="error-icon">
+                    <img src="../assets/svg/error.svg" width="25" alt="Error" class="error-icon">
                     <p>Cannot scan images on this page</p>
                 </div>
             `;
@@ -129,10 +217,10 @@ async function detectImages() {
         }
 
     } catch (error) {
-        console.error('Detection error:', error);
+        console.log('Detection error:', error);
         imageGrid.innerHTML = `
             <div class="error-state">
-                <img src="../assets/svg/error.svg" alt="Error" class="error-icon">
+                <img src="../assets/svg/error.svg"  width="25" alt="Error" class="error-icon">
                 <p>${error.message || 'Failed to scan images'}</p>
                 <button id="retry-btn" class="btn-secondary">
                     <img src="../assets/svg/refresh.svg" alt="Retry" class="icon">
@@ -233,18 +321,52 @@ function handleResize(img) {
 
 // Event Listeners
 loginBtn.addEventListener('click', async () => {
-    if (CONFIG.IS_DEV) {
-        await AuthHelper.setCurrentUser(CONFIG.DEV_USER);
-        showAuthenticatedUI(CONFIG.DEV_USER);
-        await detectImages();
-    } else {
+    try {
+        // Clear everything first
+        await new Promise((resolve) => {
+            chrome.identity.clearAllCachedAuthTokens(resolve);
+        });
+        await chrome.storage.local.remove('PR_pro_user');
+        
+        // Open auth page in new tab
         chrome.tabs.create({ url: 'pages/auth/auth.html' });
+    } catch (error) {
+        console.error('Login initialization error:', error);
+        alert('Failed to initialize login. Please try again.');
     }
 });
 
 logoutBtn.addEventListener('click', async () => {
-    await AuthHelper.logout();
-    showUnauthenticatedUI();
+    try {
+        // Get current token
+        const token = await new Promise(resolve => 
+            chrome.identity.getAuthToken({ interactive: false }, resolve)
+        );
+        
+        if (token) {
+            // Remove from cache
+            await new Promise(resolve => 
+                chrome.identity.removeCachedAuthToken({ token }, resolve)
+            );
+            
+            // Revoke the token
+            try {
+                await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`);
+            } catch (revokeError) {
+                console.error('Token revocation failed:', revokeError);
+                // Continue with logout even if revocation fails
+            }
+        }
+
+        // Clear everything
+        await new Promise(resolve => chrome.identity.clearAllCachedAuthTokens(resolve));
+        await chrome.storage.local.remove('PR_pro_user');
+        
+        showUnauthenticatedUI();
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Failed to logout. Please try again.');
+    }
 });
 
 refreshBtn.addEventListener('click', detectImages);
@@ -350,7 +472,7 @@ async function detectImages() {
         }
 
     } catch (error) {
-        console.error('Detection error:', error);
+        console.log('Detection error:', error);
         showError(error.message);
     }
 }
@@ -373,7 +495,7 @@ function showError(message) {
     
     noImages.innerHTML = `
         <div class="empty-state">
-            <img src="../assets/svg/error.svg" alt="Error" class="error-icon">
+            <img src="../assets/svg/error.svg" width="25" alt="Error" class="error-icon">
             <p>${message || 'Failed to scan images'}</p>
             <button id="refresh-empty" class="btn-secondary">
                 <img src="../assets/svg/refresh.svg" alt="Retry" class="icon">
@@ -451,3 +573,34 @@ function createImageCard(img) {
 
 // Initialize
 initializeUI();
+
+// popup.js
+// Create a port connection
+const port = chrome.runtime.connect({ name: 'popup-' + Date.now() });
+
+// Listen for auth state changes
+port.onMessage.addListener(async (message) => {
+    if (message.type === "AUTH_STATE_CHANGED") {
+        const user = message.user;
+        if (user) {
+            try {
+                // Ensure we have a fresh token
+                await refreshAuthToken();
+                await chrome.storage.local.set({ PR_pro_user: user });
+                showAuthenticatedUI(user);
+                detectImages();
+            } catch (error) {
+                console.error('Auth state change error:', error);
+                showUnauthenticatedUI();
+            }
+        } else {
+            await chrome.storage.local.remove('PR_pro_user');
+            showUnauthenticatedUI();
+        }
+    }
+});
+
+// Clean up when popup closes
+window.addEventListener('unload', () => {
+    port.disconnect();
+});

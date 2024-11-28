@@ -13,29 +13,51 @@
                 <h1>Image Resizer Pro</h1>
             </div>
 
-            <div class="features">
-                <h2>Features</h2>
-                <ul>
-                    <li>
-                        <img src="../../assets/svg/check.svg" alt="Check" class="icon">
-                        Detect images on any webpage
-                    </li>
-                    <li>
-                        <img src="../../assets/svg/check.svg" alt="Check" class="icon">
-                        Resize images with custom dimensions
-                    </li>
-                    <li>
-                        <img src="../../assets/svg/check.svg" alt="Check" class="icon">
-                        Track resize history
-                    </li>
-                </ul>
+            <!-- Logged out state -->
+            <div id="logged-out-content">
+                <div class="features">
+                    <h2>Features</h2>
+                    <ul>
+                        <li>
+                            <img src="../../assets/svg/check.svg" alt="Check" class="icon">
+                            Detect images on any webpage
+                        </li>
+                        <li>
+                            <img src="../../assets/svg/check.svg" alt="Check" class="icon">
+                            Resize images with custom dimensions
+                        </li>
+                        <li>
+                            <img src="../../assets/svg/check.svg" alt="Check" class="icon">
+                            Track resize history
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="auth-actions">
+                    <button id="google-login" class="btn-google">
+                        <img src="../../assets/svg/google.svg" alt="Google" class="icon">
+                        Continue with Google
+                    </button>
+                </div>
             </div>
 
-            <div class="auth-actions">
-                <button id="google-login" class="btn-google">
-                    <img src="../../assets/svg/google.svg" alt="Google" class="icon">
-                    Continue with Google
-                </button>
+            <!-- Logged in state -->
+            <div id="logged-in-content" class="hidden">
+                <div class="user-info">
+                    <img id="user-photo" class="user-photo" alt="Profile Photo">
+                    <div class="user-details">
+                        <h3 id="user-name"></h3>
+                        <p id="user-email"></p>
+                    </div>
+                </div>
+                <div class="auth-actions">
+                    <button id="change-account" class="btn-secondary">
+                        Change Account
+                    </button>
+                    <button id="logout" class="btn-danger">
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div id="auth-status" class="auth-status hidden">
@@ -48,7 +70,6 @@
     </div>
     <script src="../../js/firebase/firebase-app.js"></script>
     <script src="../../js/firebase/firebase-auth.js"></script>
-
     <script src="../../js/config.js"></script>
     <script src="../../js/api.js"></script>
     <script src="auth.js"></script>
