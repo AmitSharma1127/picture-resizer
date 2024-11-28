@@ -14,6 +14,11 @@ const closeBtn = document.getElementById("close-btn");
 const resizeText = document.getElementById("resize-text");
 const resizeLoader = document.getElementById("resize-loader");
 
+// Notification
+const notification = document.getElementById("notification");
+const notificationIcon = document.getElementById("notification-icon");
+const notificationMessage = document.getElementById("notification-message");
+
 // State
 let aspectRatio = 1;
 let isAspectLocked = true;
@@ -21,20 +26,85 @@ let originalWidth = 0;
 let originalHeight = 0;
 let originalFileSize = 0;
 
-// Notification
-const notification = document.getElementById("notification");
-const notificationIcon = document.getElementById("notification-icon");
-const notificationMessage = document.getElementById("notification-message");
+function showNotification(type, message, duration = 3000) {
+	const notification = document.getElementById("notification");
+	const messageEl = document.getElementById("notification-message");
+	const progress = notification.querySelector(".notification-progress");
 
-// Show Notification
-function showNotification(type, message) {
-	notificationIcon.className = `notification-icon ${type}`;
-	notificationMessage.textContent = message;
-	notification.classList.remove("hidden");
+	// Reset animation
+	progress.style.animation = "none";
+	progress.offsetHeight; // Trigger reflow
+	progress.style.animation = null;
 
+	// Update content and show
+	messageEl.textContent = message;
+	notification.className = `notification ${type}`;
+
+	// Show notification
 	setTimeout(() => {
-		notification.classList.add("hidden");
-	}, 3000);
+		notification.classList.remove("hidden");
+	}, 10);
+
+	// Hide after duration
+	const hideTimeout = setTimeout(() => {
+		hideNotification();
+	}, duration);
+
+	// Store timeout ID
+	notification.dataset.timeoutId = hideTimeout;
+}
+
+function hideNotification() {
+	const notification = document.getElementById("notification");
+	notification.classList.add("hidden");
+
+	// Clear any existing timeout
+	if (notification.dataset.timeoutId) {
+		clearTimeout(Number(notification.dataset.timeoutId));
+		delete notification.dataset.timeoutId;
+	}
+}
+
+// Add close button listener
+document
+	.querySelector(".notification-close")
+	.addEventListener("click", hideNotification);
+
+// Update the process command error handling
+function processCommand() {
+	const command = commandInput.value;
+	const dimensions = parseCommand(command);
+
+	if (dimensions) {
+		try {
+			if (
+				dimensions.width < CONFIG.MIN_IMAGE_WIDTH ||
+				dimensions.width > CONFIG.MAX_IMAGE_WIDTH ||
+				dimensions.height < CONFIG.MIN_IMAGE_HEIGHT ||
+				dimensions.height > CONFIG.MAX_IMAGE_HEIGHT
+			) {
+				showNotification(
+					"warning",
+					`Dimensions must be between ${CONFIG.MIN_IMAGE_WIDTH}×${CONFIG.MIN_IMAGE_HEIGHT} and ${CONFIG.MAX_IMAGE_WIDTH}×${CONFIG.MAX_IMAGE_HEIGHT} pixels`
+				);
+				return;
+			}
+
+			updateDimensionInputs(dimensions.width, dimensions.height);
+			commandInput.value = "";
+			showNotification("success", "Dimensions updated successfully");
+		} catch (error) {
+			showNotification(
+				"error",
+				"Invalid dimensions. Please check the size limits."
+			);
+		}
+	} else {
+		showNotification(
+			"error",
+			"Could not understand the command. Please use format: 1024x1024"
+		);
+	}
 }
 
 // Initialize
@@ -216,7 +286,93 @@ async function handleResize() {
 	}
 }
 
-// Add Custom Preset
+function parseDimensions(dimString) {
+	const match = dimString.match(/(\d+)\s*[xX]\s*(\d+)/);
+	if (match) {
+		return {
+			width: parseInt(match[1]),
+			height: parseInt(match[2])
+		};
+	}
+	return null;
+}
+
+// Parse natural language command
+function parseCommand(command) {
+	// Convert to lowercase for easier parsing
+	command = command.toLowerCase().trim();
+
+	// First try to parse direct dimensions (e.g., "1024x1024")
+	const directDims = parseDimensions(command);
+	if (directDims) return directDims;
+
+	// Look for dimensions in a command (e.g., "please resize to 1024x1024")
+	const match = command.match(/(?:resize\s+to\s+)?(\d+)\s*[xX]\s*(\d+)/);
+	if (match) {
+		return {
+			width: parseInt(match[1]),
+			height: parseInt(match[2])
+		};
+	}
+
+	return null;
+}
+
+// Update DOM elements with new dimensions
+function updateDimensionInputs(width, height) {
+	widthInput.value = width;
+	heightInput.value = height;
+	updateSizeEstimation();
+}
+
+// Process the command input
+function processCommand() {
+	const command = commandInput.value;
+	const dimensions = parseCommand(command);
+
+	if (dimensions) {
+		try {
+			// Validate dimensions before applying
+			if (
+				dimensions.width < CONFIG.MIN_IMAGE_WIDTH ||
+				dimensions.width > CONFIG.MAX_IMAGE_WIDTH ||
+				dimensions.height < CONFIG.MIN_IMAGE_HEIGHT ||
+				dimensions.height > CONFIG.MAX_IMAGE_HEIGHT
+			) {
+				throw new Error("Dimensions out of valid range");
+			}
+
+			updateDimensionInputs(dimensions.width, dimensions.height);
+			// Clear input after successful parse
+			commandInput.value = "";
+		} catch (error) {
+			showNotification(
+				"error",
+				"Invalid dimensions. Please check the size limits."
+			);
+		}
+	} else {
+		showNotification(
+			"error",
+			"Could not understand the command. Please use format: 1024x1024"
+		);
+	}
+}
+
+// Add event listeners for command input
+const commandInput = document.getElementById("command-input");
+const commandSubmit = document.getElementById("command-submit");
+
+commandInput.addEventListener("keyup", e => {
+	if (e.key === "Enter") {
+		processCommand();
+	}
+});
+
+commandSubmit.addEventListener("click", () => {
+	processCommand();
+});
+
 function addCustomPreset(name, width, height) {
 	const presetsContainer = document.querySelector(".preset-buttons");
 

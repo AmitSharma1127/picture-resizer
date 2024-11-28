@@ -1,5 +1,5 @@
 const CONFIG = {
-    IS_DEV: true,
+    IS_DEV: false,
     API_BASE_URL: "http://localhost:3000",
     FIREBASE_CONFIG: {
         apiKey: "AIzaSyAED1M1QdLZrF_oFNrh8DKA6hSZGuYTBrk",

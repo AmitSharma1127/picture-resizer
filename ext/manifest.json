@@ -2,6 +2,7 @@
     "manifest_version": 3,
     "name": "Image Resizer Pro",
     "version": "1.0",
+    "key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC4eGiK+sk8Jggb6Lx8c4pSh4HzM0afqBixKUgTUFKkMxkuEjs1A0uicRNmPzlw2byvz1rJ+UXSXKiX1j2HAPB5z1lgUZgJ4shFervr3ffQAEueBMQBhgyDxKlKhequhWezHRcXkZF/eyNpcUQf+/dhF1/x6A7SkuT5o84d93bYvDp+DG4RImTin4cPWKe8GBmszYeJcwoeT1tf7IXpJ3eIzgiOxMPcU6Pj8uwNSQrsSuUHzV4nEdIwE4MvaV35d3EYxAxfjQjHeZhjv357LfH5kbX+0uX3FfCqs6uPwo95HSHaVRRjsmUUoCF1rGb6O6e1PXdnxC7nQbvjp9Y44xqhAgMBAAECggEABW4r+61ix6XB9tpc1BgNohzRl0By64fGBE8YC1OBv0ouy1OnkQmyDAvim4+wZ/FM8+r5e/kd1FG8d83LfWIqcheHxMVaIa5eoWb5ybl8zk936mSvBXF2BFoBdstm63DLavMoBx5Wp2dPVU8Lh5qB/4Zx4VvotcuzuGKZUnoCsmIZM6dIVRSzLAbWSJXl6U7V28na3yt6wGHdO5GPoWgt2UfIihvMQ6bg2HzqTdZ7xM0Z5FfmW4aVwa2tkLXLEH25Inqqz4fiNp3MQdZtyDyUghETJVU6xj7qsxIRD2JpcAkZ5fIA65Kw+x6t2DwjZpEE+6pWzCTB3ftO7pZGQS+U3QKBgQD7UPLZJ7uY/TMO+th4T0YA1OxLvVqt+lXwqsym0ZPD55VEajzZhOwOLoGTL2sm2n2qm9uZup85BoL14xbRGKGKuWPTkvDG6NaGJlbV8BGYxSUx2F55Cz8XjWQuvACwn8xD/VwdndG3+UnqCEZ5HWtt3QP0VAOba1Zrdp8KsDe0ZQKBgQC76IhImPwTr9BpsWumuQ3JisoXIyEHVY2nbIj4zknsS6ZUOsdcKpn5xx9vqA3peOOYPmRBbmmansZ+L5Rt/ToiMNOYFJqy7Mzz97hCR9pmdGeUDXVfjjs9COgaAoCkTftjJe8hF5o1YB4O95FvT8UsL4+aKxDjRI//uoiROFhTjQKBgQDspQG3p2lHmwxMC7pwNz1UpSpH+2p6rmHkOABzCJ9adiOhA2R+8mIQzIvom1sLf+ubDh3PeOJbIR2KCaa/h7D9Xqp4XEHrGu597XYRB3iaYPEwKWx0EDn9pH70XsVLi30dfGIT5TrIQK3v+JDblO9GyTnjBIVNANqkYFNMDji13QKBgFMKRf/fK7b/gVjUAUDiksc4QGrNKXF2S21rt3RMpbp5C/45I5UFdpo9dxT+7Xb554qGOAP6aUzdUda97BhXSfOGJFwW7u6XW1ONa65O1qNkWcnB0NbzohYs83VbGcKCe8+rGexD4/Amk+IFYg4Q8I/ATPPSiFoHGKPoqSWUAuSZAoGBALF10cyX0OwHtNgMjsRBdg+P6ae+m+lzl8/53Tv3B5TWWQVu+rjNQHXvwTUV11F3w5MmFCbmI9kW6uA5ev9MeFU07EYSYu5MvYtfoAX6++Uq8hNd7wVa7VjQ07fo4hQMU5wkSU+wgeVxKhlwQssoEUWQdicx7qPXj8o0D0+8dFZG",
     "description": "Detect and resize images on any webpage",
     "permissions": [
         "activeTab",
@@ -33,6 +34,18 @@
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
     },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "pages/history/*",
+                "assets/*",
+                "js/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
     "icons": {
         "16": "assets/icons/icon16.png",
         "48": "assets/icons/icon48.png",

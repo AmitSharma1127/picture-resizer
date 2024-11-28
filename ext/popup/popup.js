@@ -248,9 +248,40 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 refreshBtn.addEventListener('click', detectImages);
-
 viewHistoryBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'pages/history/history.html' });
+    const popupContainer = document.querySelector('.container');
+    
+    const linkElement = document.createElement('link');
+    linkElement.rel = 'stylesheet';
+    linkElement.href = '../pages/history/history.css';
+    document.head.appendChild(linkElement);
+    
+    fetch(chrome.runtime.getURL('pages/history/history.html'))
+        .then(response => response.text())
+        .then(html => {
+            // Create temporary container to extract content
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = html;
+            
+            // Get content within body
+            const historyContent = tempContainer.querySelector('.container').innerHTML;
+            
+            // Replace popup content
+            popupContainer.innerHTML = historyContent;
+            
+            // Add back button to header
+            const headerLeft = document.querySelector('.header-left');
+            const backButton = document.createElement('button');
+            backButton.className = 'btn-icon';
+            backButton.innerHTML = '<img src="../assets/svg/left-arrow.svg" alt="Back" class="icon">';
+            backButton.addEventListener('click', () => window.location.reload());
+            headerLeft.insertBefore(backButton, headerLeft.firstChild);
+            
+            // Load history.js script
+            const script = document.createElement('script');
+            script.src = '../pages/history/history.js';
+            document.body.appendChild(script);
+        });
 });
 
 const imageDetection = document.getElementById('image-detection');

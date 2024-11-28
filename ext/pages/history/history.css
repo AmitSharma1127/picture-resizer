@@ -1,3 +1,4 @@
+/* Modified history.css for popup context */
 :root {
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -17,83 +18,95 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background: var(--background);
+  background: var(--surface);
   color: var(--text);
-  min-height: 100vh;
+  width: 400px;  /* Standard popup width */
+  height: 600px; /* Standard popup height */
+  overflow: hidden;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
+/* Header styles update */
 .header {
   background: var(--surface);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
-.header-left h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 4px;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }
 
-.history-count {
-  color: var(--text-secondary);
-  font-size: 14px;
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Adjust button styling for better alignment */
+.header-right .btn-secondary {
+  padding: 6px 12px;
+  height: 32px;
+  white-space: nowrap;
 }
 
 /* History List */
 .history-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .history-item {
   background: var(--surface);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
-}
-
-.history-item:hover {
-  transform: translateY(-2px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
 }
 
 .history-image {
-  width: 100%;
-  height: 200px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .history-details {
-  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .history-date {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 8px;
 }
 
 .history-dimensions {
   display: flex;
-  align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
 }
 
 .dimension-group {
@@ -101,39 +114,42 @@ body {
 }
 
 .dimension-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .dimension-value {
+  font-size: 13px;
   font-weight: 500;
 }
 
 .history-actions {
   display: flex;
   gap: 8px;
+  margin-top: auto;
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
-  padding: 48px;
+  padding: 32px 16px;
 }
 
 .empty-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
 }
 
 .empty-state h2 {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .empty-state p {
+  font-size: 13px;
   color: var(--text-secondary);
 }
 
@@ -143,9 +159,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -173,11 +190,29 @@ body {
 
 /* Icons */
 .icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 /* Utilities */
 .hidden {
   display: none !important;
+}
+
+/* Scrollbar Styling */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
