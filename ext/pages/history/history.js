@@ -5,30 +5,38 @@ const clearHistoryBtn = document.getElementById("clear-history");
 
 // Load History
 async function loadHistory() {
-	const history = await getHistory();
-	displayHistory(history);
+	try {
+		const history = await getHistory();
+		console.log("Loaded history:", history);
+		displayHistory(history);
+	} catch (error) {
+		console.error("Error loading history:", error);
+	}
 }
 
 // Get History from Chrome Storage
 async function getHistory() {
-	const { history = [] } = await chrome.storage.local.get("history");
-	return history;
+	try {
+		const { PR_pro_user: user } = await chrome.storage.local.get("PR_pro_user");
+		if (!user) return [];
+		console.log(user);
+		const { history = {} } = await chrome.storage.local.get("history");
+		return history[user.uid] || [];
+	} catch (error) {
+		console.error("Error getting history:", error);
+		return [];
+	}
 }
+// Save History to Chrome Storage
+async function saveHistory(historyItems) {
+	const { PR_pro_user: user } = await chrome.storage.local.get("PR_pro_user");
+	if (!user) return;
 
-// Save History to Chrome Storage
-// Save History to Chrome Storage
-async function saveHistory(history) {
-	console.log("Saving history:", history.length);
-	const updatedHistory = history.map((item, index) => ({
-		id: item.id || index,
-		resizedUrl: item.resizedUrl,
-		originalWidth: item.originalWidth,
-		originalHeight: item.originalHeight,
-		width: item.width,
-		height: item.height,
-		timestamp: item.timestamp
-	}));
-	await chrome.storage.local.set({ history: updatedHistory });
+	const { history = {} } = await chrome.storage.local.get("history");
+	history[user.uid] = historyItems;
+	console.log("saving history");
+	console.log(history);
+	await chrome.storage.local.set({ history });
 }
 
 // Display History
@@ -121,11 +129,14 @@ async function deleteHistoryItem(id) {
 
 // Clear All History
 clearHistoryBtn.addEventListener("click", async () => {
-	if (!confirm("Are you sure you want to clear all history?")) {
-		return;
-	}
+	if (!confirm("Are you sure you want to clear all history?")) return;
 
-	await chrome.storage.local.remove("history");
+	const { PR_pro_user: user } = await chrome.storage.local.get("PR_pro_user");
+	if (!user) return;
+
+	const { history = {} } = await chrome.storage.local.get("history");
+	delete history[user.uid];
+	await chrome.storage.local.set({ history });
 	await loadHistory();
 });
 

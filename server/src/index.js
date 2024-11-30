@@ -11,6 +11,22 @@ app.use(cors());
 
 app.use("/api/auth", authRoutes);
 
+const multer = require("multer");
+const storage = multer.diskStorage({
+	destination: "public/uploads/",
+	filename: (req, file, cb) => {
+		cb(null, `upload_${Date.now()}_${file.originalname}`);
+	}
+});
+const upload = multer({ storage });
+
+app.post("/api/upload", upload.single("image"), (req, res) => {
+	if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+	res.json({
+		url: `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+	});
+});
+
 app.post("/api/resize", async (req, res) => {
 	const { imageUrl, width, height } = req.body;
 	console.log("resize request", req.body);
@@ -51,6 +67,9 @@ app.post("/api/resize", async (req, res) => {
 
 // an endpoint to fetch images from the public folder
 app.use("/resized_images", express.static("public/resized_images"));
+
+// an endpoint to fetch images from the upload folder
+app.use("/uploads", express.static("public/uploads"));
 
 app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);

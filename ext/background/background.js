@@ -1,37 +1,45 @@
-// background.js
-// Store active port connections
-let ports = new Map();
+class BackgroundManager {
+	constructor() {
+		this.authPorts = new Set();
+		this.setupListeners();
+	}
 
-// Listen for connections from extension pages
-chrome.runtime.onConnect.addListener(port => {
-	// Store the connection with a unique identifier
-	ports.set(port.name, port);
+	setupListeners() {
+		chrome.runtime.onConnect.addListener(port => {
+			if (
+				port.name.startsWith("popup-") ||
+				port.name.startsWith("auth-page-")
+			) {
+				this.authPorts.add(port);
+				port.onDisconnect.addListener(() => this.authPorts.delete(port));
+				port.onMessage.addListener(msg => this.handleMessage(msg));
+			}
+		});
+	}
 
-	// Remove port when disconnected
-	port.onDisconnect.addListener(() => {
-		ports.delete(port.name);
-	});
-
-	// Listen for messages on this port
-	port.onMessage.addListener(message => {
-		if (message.type === "AUTH_STATE_CHANGED") {
-			// Broadcast to all connected ports except sender
-			ports.forEach((p, portName) => {
-				if (p !== port) {
-					try {
-						p.postMessage(message);
-					} catch (error) {
-						console.error(`Failed to send to port ${portName}:`, error);
-						ports.delete(portName);
-					}
-				}
-			});
+	handleMessage(message) {
+		switch (message.type) {
+			case "LOGOUT_REQUEST":
+				console.log("Logging out user");
+				this.broadcastAuthState(null);
+				break;
+			case "AUTH_STATE_CHANGED":
+				this.broadcastAuthState(message.user);
+				break;
 		}
-	});
-});
+	}
 
-// Handle installation
-chrome.runtime.onInstalled.addListener(() => {
-	// Initialize storage
-	chrome.storage.local.set({ history: [] });
-});
+	broadcastAuthState(user) {
+		console.log("Broadcasting auth state", user);
+		const message = { type: "AUTH_STATE_CHANGED", user };
+		this.authPorts.forEach(port => {
+			try {
+				port.postMessage(message);
+			} catch (error) {
+				this.authPorts.delete(port);
+			}
+		});
+	}
+}
+
+new BackgroundManager();

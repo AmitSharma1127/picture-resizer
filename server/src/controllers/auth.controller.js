@@ -71,6 +71,24 @@ const authController = {
 				message: "User not authenticated"
 			});
 		}
+	},
+
+	// Sign Out
+	signout: async (req, res) => {
+		try {
+			await admin.auth().revokeRefreshTokens(req.user.uid);
+
+			res.json({
+				success: true,
+				message: "User signed out successfully"
+			});
+		} catch (error) {
+			console.error("Signout Error:", error);
+			res.status(400).json({
+				success: false,
+				message: error.message
+			});
+		}
 	}
 };
 

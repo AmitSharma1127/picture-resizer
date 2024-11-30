@@ -15,5 +15,6 @@ const signUpValidation = [
 router.post("/signup", validate(signUpValidation), authController.signUp);
 router.post("/signin", verifyToken, authController.signIn);
 router.get("/is-logged-in", verifyToken, authController.isLoggedIn);
+router.post("/signout", verifyToken, authController.signout);
 
 module.exports = router;

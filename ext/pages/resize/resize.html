@@ -7,7 +7,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1>Resize Image</h1>
             <button id="close-btn" class="btn-icon" title="Close">
@@ -15,7 +14,6 @@
             </button>
         </div>
 
-        <!-- Preview Section -->
         <div class="preview-section">
             <div class="preview-container">
                 <img id="image-preview" src="" alt="Image preview" class="preview-image">
@@ -46,64 +44,6 @@
             </div>
         </div>
 
-        <!-- Resize Controls -->
-        <div class="resize-controls">
-            <!-- Dimensions Input -->
-            <div class="dimensions-group">
-                <div class="input-group">
-                    <label for="width">Width</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="width" min="1" class="dimension-input">
-                        <span class="unit">px</span>
-                    </div>
-                </div>
-
-                <button id="lock-aspect" class="btn-icon" title="Lock aspect ratio">
-                    <img id="lock-icon" width="25" src="../../assets/svg/lock.svg" alt="Lock" class="icon">
-                </button>
-
-                <div class="input-group">
-                    <label for="height">Height</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="height" min="1" class="dimension-input">
-                        <span class="unit">px</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Presets -->
-            <div class="presets-group">
-                <label class="preset-label">Quick Resize</label>
-                <div class="preset-buttons">
-                    <button class="preset-btn" data-width="1920" data-height="1080">
-                        <span class="preset-name">Full HD</span>
-                        <span class="preset-size">1920x1080</span>
-                    </button>
-                    <button class="preset-btn" data-width="1280" data-height="720">
-                        <span class="preset-name">HD</span>
-                        <span class="preset-size">1280x720</span>
-                    </button>
-                    <button class="preset-btn" data-width="800" data-height="600">
-                        <span class="preset-name">Medium</span>
-                        <span class="preset-size">800x600</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Size Estimation -->
-            <div class="size-estimation">
-                <div class="estimation-detail">
-                    <span class="label">Estimated size:</span>
-                    <span id="estimated-size">Calculating...</span>
-                </div>
-                <div class="estimation-detail">
-                    <span class="label">Reduction:</span>
-                    <span id="size-reduction">-</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
         <div class="action-buttons">
             <button id="cancel-btn" class="btn-secondary">Cancel</button>
             <button id="resize-btn" class="btn-primary">
@@ -112,7 +52,6 @@
             </button>
         </div>
 
-        <!-- Notification -->
         <div class="notification-container">
             <div id="notification" class="notification hidden">
                 <div class="notification-content">

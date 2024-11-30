@@ -218,8 +218,8 @@ const AuthHelper = {
 
     async getCurrentUser() {
         try {
-            const { user } = await chrome.storage.local.get('PR_pro_user');
-            
+            const { PR_pro_user } = await chrome.storage.local.get('PR_pro_user');
+            const user = PR_pro_user
             if (!user) {
                 return null;
             }
