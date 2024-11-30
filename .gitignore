@@ -2,6 +2,7 @@ server/node_modules
 server/package-lock.json
 server/firebase-service-account.json
 server/public/resized_images
+server/public/uploads
 server/.env
 ext.crx
 ext.pem
